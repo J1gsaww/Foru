@@ -1,0 +1,487 @@
+/* ============ For u na ============ */
+:root {
+  --ink: #5a4a55;
+  --ink-soft: #8d7a86;
+  --cream: #fff8ef;
+  --pink: #f4c9d2;
+  --pink-deep: #e796a8;
+  --mint: #bfe3cf;
+  --leaf: #8fc7a6;
+  --blue: #a9c8ec;
+  --card: rgba(255, 250, 245, 0.84);
+  --shadow: 0 8px 28px rgba(150, 100, 120, 0.18);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #efe6dd; }
+
+body {
+  font-family: 'Mali', system-ui, sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 520px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #f6e6d3;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- ฉาก ---------- */
+#app { transition: background-color 1.6s ease; background-color: #f6e9de; }
+#scenes, .scene { position: absolute; inset: 0; }
+.scene { opacity: 0; transition: opacity 1.6s ease; }
+.scene.on { opacity: 1; }
+
+/* พื้นที่วางภาพ: เหนือกล่องข้อความ */
+.scene .art {
+  position: absolute;
+  left: 0; right: 0;
+  top: max(58px, env(safe-area-inset-top));
+  bottom: 205px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+}
+.scene .art img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  animation: drift 26s ease-in-out infinite alternate;
+}
+@keyframes drift { from { transform: scale(1); } to { transform: scale(1.035); } }
+
+/* ภาพเต็ม (ผิวน้ำ) — เต็มความกว้าง แล้วจางลงกระดาษด้านล่าง */
+.scene.fit-cover .art { top: 0; padding: 0; bottom: 150px; }
+.scene.fit-cover .art img {
+  width: 100%; height: 100%; max-width: none; max-height: none;
+  object-fit: cover; object-position: center 35%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+}
+
+/* น้ำกระเพื่อม */
+.scene.fx-ripple .art img { filter: url(#ripple); animation: none; }
+
+/* ภาพนิ่ง ไม่ขยับ */
+.scene.fx-still .art img { animation: none; }
+
+/* ไกวชิงช้า (ไม่ได้ใช้แล้ว): ซูมเข้าตอนไกวขึ้น ซูมออกตอนไกวกลับ */
+.scene.fx-swing .art { overflow: hidden; }
+.scene.fx-swing .art img { animation: swingZoom 3.4s cubic-bezier(.45,0,.55,1) infinite; transform-origin: 50% 45%; }
+@keyframes swingZoom {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.18); }
+}
+
+/* แสงเรืองรอบตัวละคร หายใจเป็นจังหวะ */
+.scene.fx-glow .art::after, .scene.fx-heart .art::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 48%;
+  width: 70%; aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 238, 200, 0.55) 0%, rgba(255, 220, 190, 0.25) 40%, rgba(255, 220, 190, 0) 70%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: glowBreathe 3.6s ease-in-out infinite;
+}
+@keyframes glowBreathe { 0%, 100% { opacity: .55; transform: translate(-50%, -50%) scale(.95); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); } }
+
+/* มือทาบอก: แสงที่อกค่อย ๆ สว่างขึ้น */
+.scene.fx-heart .art::after {
+  top: 52%; width: 55%;
+  background: radial-gradient(circle, rgba(255, 236, 190, 0.9) 0%, rgba(255, 214, 170, 0.45) 35%, rgba(255, 214, 170, 0) 70%);
+  animation: heartGlow 6s ease-out forwards, glowBreathe 3.6s ease-in-out 6s infinite;
+}
+@keyframes heartGlow { from { opacity: 0; transform: translate(-50%, -50%) scale(.6); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+
+/* วิ่งตามไป: ค่อย ๆ ซูมเข้า */
+.scene.fx-push .art img { animation: push 10s ease-out forwards; }
+@keyframes push { from { transform: scale(1); } to { transform: scale(1.12); } }
+
+/* ไฮเดรนเยียพูด: ดอกไม้โยกเบา ๆ */
+.scene.fx-flower .art img { transform-origin: 50% 95%; }
+.scene.fx-flower .art img.nod { animation: flowerNod 1.6s ease-in-out 1; }
+@keyframes flowerNod {
+  0%, 100% { transform: rotate(0) scale(1); }
+  30% { transform: rotate(-1.6deg) scale(1.01); }
+  70% { transform: rotate(1.2deg) scale(1.01); }
+}
+
+/* โทนชมพูตอนจบ */
+.scene::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(255, 196, 214, 0.55), rgba(247, 185, 201, 0.25) 70%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 3s ease;
+  pointer-events: none;
+}
+.scene.pink::after { opacity: 1; }
+
+/* ---------- กลีบดอกไม้ ---------- */
+#petals, #motes { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.petal {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 8px;
+  border-radius: 80% 0 80% 0;
+  opacity: 0.8;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  0% { transform: translate(0, 0) rotate(0); }
+  100% { transform: translate(var(--dx), 105vh) rotate(var(--rot)); }
+}
+.mote {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffe7ee 45%, rgba(255,220,230,0) 70%);
+  animation: rise ease-out forwards;
+}
+.mote.in { animation-name: gather; animation-timing-function: ease-in; }
+@keyframes gather {
+  0% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.3); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(0, 0) scale(.4); }
+}
+@keyframes rise {
+  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.4); }
+}
+
+/* ---------- หลับตา / จอขาว ---------- */
+.lid {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  height: 62%;
+  background: #3a2c36;
+  z-index: 20;
+  pointer-events: none;
+  transition: transform 2.2s cubic-bezier(.6,.05,.3,1);
+}
+#lidTop { top: 0; border-radius: 0 0 50% 50% / 0 0 30% 30%; transform: translateY(-105%); }
+#lidBottom { bottom: 0; border-radius: 50% 50% 0 0 / 30% 30% 0 0; transform: translateY(105%); }
+#app.eyes-closed #lidTop, #app.eyes-closed #lidBottom { transform: translateY(0); }
+
+#whiteout {
+  position: absolute; inset: 0;
+  background: #fffaf6;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 21;
+  transition: opacity 2.4s ease;
+}
+#whiteout.on { opacity: 1; }
+
+/* ---------- HUD ---------- */
+#hud {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 1s;
+}
+#hud.on { opacity: 1; }
+.hud-btn {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 250, 245, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  box-shadow: 0 2px 10px rgba(150,100,120,.15);
+  cursor: pointer;
+}
+
+/* ---------- กล่องข้อความ ---------- */
+#ui {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 0 14px max(16px, env(safe-area-inset-bottom));
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#box {
+  position: relative;
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 22px 22px 30px;
+  min-height: 150px;
+  box-shadow: var(--shadow);
+  animation: boxIn .6s ease;
+}
+@keyframes boxIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+#name {
+  position: absolute;
+  top: -15px; left: 18px;
+  padding: 4px 16px;
+  border-radius: 999px;
+  font-size: .95rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--pink-deep);
+  box-shadow: 0 3px 10px rgba(150,100,120,.2);
+}
+#name:empty { display: none; }
+#name.hydrangea { background: #8fb2df; }
+#name.child { background: #f2a98c; }
+#name.seller { background: #e796a8; }
+#name.reflect { background: #a99bd6; }
+#name.all { background: linear-gradient(90deg, #f2a98c, #e796a8, #a99bd6); }
+
+#lines p {
+  font-size: 1.08rem;
+  line-height: 1.85;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity .8s ease, transform .8s ease;
+}
+#lines p.show { opacity: 1; transform: none; }
+#lines p + p { margin-top: .15em; }
+#box.narr #lines p { color: #6d5b66; }
+#box.speech #lines p { font-weight: 500; }
+#box.cat #lines p { color: #7a7484; }
+#lines p.gap { height: .6em; }
+
+#tapHint {
+  position: absolute;
+  right: 18px; bottom: 8px;
+  font-size: .75rem;
+  color: var(--ink-soft);
+  opacity: 0;
+  transition: opacity .6s;
+}
+#tapHint.on { opacity: .8; animation: blink 2.2s ease-in-out infinite; }
+@keyframes blink { 0%,100% { opacity: .35; } 50% { opacity: .85; } }
+
+/* ---------- ปุ่ม ---------- */
+#choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pill, .choice {
+  font: inherit;
+  color: var(--ink);
+  border: 0;
+  cursor: pointer;
+}
+.choice {
+  text-align: left;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  padding: 13px 18px;
+  border-radius: 18px;
+  background: rgba(255, 252, 248, 0.92);
+  box-shadow: 0 4px 14px rgba(150,100,120,.16);
+  border-left: 5px solid var(--pink);
+  opacity: 0;
+  transform: translateY(8px);
+  animation: choiceIn .55s ease forwards;
+  transition: background .2s, transform .2s;
+}
+.choice:nth-child(2) { border-left-color: var(--mint); animation-delay: .12s; }
+.choice:nth-child(3) { border-left-color: var(--blue); animation-delay: .24s; }
+.choice:nth-child(4) { border-left-color: #d9cdf0; animation-delay: .36s; }
+.choice.action { font-style: italic; color: #7a6672; }
+.choice:active { transform: scale(.98); background: #fff; }
+.choice.picked { background: #fff0f3; }
+@keyframes choiceIn { to { opacity: 1; transform: none; } }
+
+.pill {
+  align-self: center;
+  padding: 13px 30px;
+  border-radius: 999px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, #fff6f2, #ffe3ea);
+  box-shadow: 0 6px 18px rgba(200,120,150,.25), inset 0 0 0 2px rgba(255,255,255,.8);
+  transition: transform .2s, opacity .3s;
+}
+.pill:active { transform: scale(.96); }
+.pill:disabled { opacity: .45; }
+.pill.big { font-size: 1.2rem; padding: 15px 44px; }
+#choices .pill {
+  opacity: 0;
+  animation: choiceIn .7s ease .1s forwards;
+  margin-bottom: 8px;
+}
+
+/* ---------- เลือกรองเท้า ---------- */
+#shoes {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px 18px max(24px, env(safe-area-inset-bottom));
+  background: rgba(255, 246, 238, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn .8s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.shoes-title { font-size: 1.15rem; font-weight: 500; }
+.shoes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+}
+.shoe {
+  border: 0;
+  padding: 0;
+  background: #fbf3e6;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(150,100,120,.15);
+  outline: 3px solid transparent;
+  outline-offset: -3px;
+  cursor: pointer;
+  transition: transform .25s, outline-color .25s, box-shadow .25s;
+  opacity: 0;
+  animation: choiceIn .6s ease forwards;
+}
+.shoe:nth-child(2) { animation-delay: .1s; }
+.shoe:nth-child(3) { animation-delay: .2s; }
+.shoe:nth-child(4) { animation-delay: .3s; }
+.shoe img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+.shoe span {
+  display: block;
+  font: inherit;
+  font-size: .85rem;
+  color: var(--ink-soft);
+  padding: 6px 4px 10px;
+}
+.shoe.sel {
+  outline-color: var(--pink-deep);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(231,150,168,.35);
+}
+
+/* ---------- ประวัติ ---------- */
+#log {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: rgba(255, 248, 242, 0.96);
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn .4s ease;
+}
+.log-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: max(14px, env(safe-area-inset-top)) 16px 10px 20px;
+  font-weight: 600;
+}
+#logBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 20px 40px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+#logBody .entry { margin: 0 0 14px; line-height: 1.75; font-size: .98rem; }
+#logBody .entry b { display: block; font-size: .85rem; color: var(--pink-deep); }
+#logBody .entry.narr { color: #7d6b76; }
+#logBody .entry.you { color: #8a7fb5; font-style: italic; }
+
+/* ---------- หน้าแรก / หน้าจบ ---------- */
+#title, #ending {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+#title {
+  background: #f8f1ea;
+  transition: opacity 1.4s ease;
+}
+#title.gone { opacity: 0; pointer-events: none; }
+.title-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.title-flower {
+  width: 150px; height: auto;
+  margin-bottom: 4px;
+  animation: nod 5s ease-in-out infinite;
+}
+#title h1 { font-size: 2.6rem; font-weight: 600; letter-spacing: .5px; }
+.title-sub { color: var(--ink-soft); margin-bottom: 26px; }
+.title-note { margin-top: 18px; font-size: .85rem; color: var(--ink-soft); }
+
+#ending {
+  background: #fffaf6;
+  animation: fadeIn 2.4s ease;
+}
+.ending-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.ending-line span { display: block; white-space: nowrap; }
+.ending-line span + span { margin-top: .2em; }
+.ending-line {
+  font-size: 1.5rem;
+  font-weight: 500;
+  opacity: 0;
+  animation: choiceIn 2s ease .8s forwards;
+}
+.ending-sub {
+  color: var(--ink-soft);
+  opacity: 0;
+  animation: choiceIn 2s ease 2.6s forwards;
+}
+#againBtn {
+  margin-top: 30px;
+  opacity: 0;
+  animation: choiceIn 1.5s ease 5s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* ตอนหลับตา ให้กล่องข้อความลอยอยู่เหนือเปลือกตา */
+#app.dark-ui #ui { z-index: 25; }
+#app.dark-ui #box { background: rgba(255, 244, 240, 0.12); box-shadow: none; }
+#app.dark-ui #box #lines p { color: #fbe9ec; }
+#app.dark-ui #tapHint { color: #e9cfd6; }
+
+/* ถ้าใส่ภาพ Midjourney แล้ว ซ่อนพื้นหลัง SVG เหลือแค่ของที่โผล่ตามบท */
+.scene.has-img svg > :not(.prop):not(defs) { display: none; }
